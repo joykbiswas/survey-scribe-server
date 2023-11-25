@@ -104,18 +104,44 @@ async function run() {
       res.send({admin})
     })
 
+    app.get('/users/surveyor/:email',verifyToken, async(req, res) =>{
+      const email = req.params.email;
+      if(email !== req.decoded.email){
+        return res.status(403).send({message: 'unauthorized access'})
+      }
+      const query = {email: email};
+      const user = await usersCollection.findOne(query);
+      let surveyor = false;
+      if(user){
+        surveyor = user.role === 'surveyor';
+      }
+      res.send({surveyor});
+    })
+
    // user role change by admin
-    app.patch('/users/admin/:id',verifyToken,verifyAdmin, async(req, res) =>{
+    app.patch('/users/admin/:id',verifyToken, async(req, res) =>{
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)}
       const updateDoc = {
         $set: {
-          role: 'admin'
+          role: 'surveyor'
         }
       }
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     })
+
+
+
+    
+    // // get user role
+    // app.get('/users/:email', async (req, res) =>{
+    //   const email = req.params.email
+    //   console.log(email);
+    //   const result = await usersCollection.findOne({email})
+    //   res.send(result);
+    //   console.log(result);
+    // })
 
     
     app.delete('/users/:id',verifyToken, verifyAdmin,  async(req, res) =>{
