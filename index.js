@@ -33,6 +33,7 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const usersCollection = client.db('surveyDB').collection('users');
+    const reviewCollection = client.db('surveyDB').collection('reviews');
 
     
     //jwt related api
@@ -124,6 +125,11 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/reviews', async(req,res) =>{
+      const result = await reviewCollection.find().toArray()
+      res.send(result);
+  })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -143,3 +149,9 @@ app.get('/', (req, res) =>{
 app.listen(port,() =>{
     console.log(`Survey scribe is running on port ${port}`);
 })
+
+
+/*
+<option value={id}>Name<option>
+{ titile : ''sada", like:0, dislike : 0,}
+*/
