@@ -34,6 +34,7 @@ async function run() {
     // await client.connect();
     const usersCollection = client.db('surveyDB').collection('users');
     const reviewCollection = client.db('surveyDB').collection('reviews');
+    const surveyCollection = client.db('surveyDB').collection('surveys');
 
     
     //jwt related api
@@ -131,18 +132,6 @@ async function run() {
       res.send(result);
     })
 
-
-
-    
-    // // get user role
-    // app.get('/users/:email', async (req, res) =>{
-    //   const email = req.params.email
-    //   console.log(email);
-    //   const result = await usersCollection.findOne({email})
-    //   res.send(result);
-    //   console.log(result);
-    // })
-
     
     app.delete('/users/:id',verifyToken, verifyAdmin,  async(req, res) =>{
       const id = req.params.id;
@@ -155,6 +144,23 @@ async function run() {
       const result = await reviewCollection.find().toArray()
       res.send(result);
   })
+
+   // create survey
+   app.post('/survey',async(req, res) =>{
+    const newSurvey = req.body;
+    console.log(newSurvey);
+    const result = await surveyCollection.insertOne(newSurvey)
+    res.send(result)
+   })
+   
+   app.get('/survey', async(req, res) =>{
+    let query ={}
+    if(req.query.email){
+      query = {email: req.query.email}
+     }
+     const result = await surveyCollection.find(query).toArray()
+     res.send(result);
+   })
 
 
     // Send a ping to confirm a successful connection
