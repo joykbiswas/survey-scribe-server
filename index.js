@@ -148,6 +148,7 @@ async function run() {
    // create survey
    app.post('/survey',async(req, res) =>{
     const newSurvey = req.body;
+    newSurvey.timestamp = new Date(); //creation date
     console.log(newSurvey);
     const result = await surveyCollection.insertOne(newSurvey)
     res.send(result)
