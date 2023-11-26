@@ -74,7 +74,7 @@ async function run() {
       next();
     }
 
-    
+
     // users related api
     app.post('/users', async(req, res) =>{
       const user =req.body;
@@ -107,11 +107,11 @@ async function run() {
       res.send({admin})
     })
 
-    app.get('/users/surveyor/:email',verifyToken, async(req, res) =>{
+    app.get('/users/surveyor/:email', async(req, res) =>{     //verifyToken, problem
       const email = req.params.email;
-      if(email !== req.decoded.email){
-        return res.status(403).send({message: 'unauthorized access'})
-      }
+      // if(email !== req.decoded.email){
+      //   return res.status(403).send({message: 'unauthorized access'})
+      // }
       const query = {email: email};
       const user = await usersCollection.findOne(query);
       let surveyor = false;
@@ -128,6 +128,19 @@ async function run() {
       const updateDoc = {
         $set: {
           role: 'surveyor'
+        }
+      }
+      const result = await usersCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    })
+
+    // user role pro-use change by payment
+    app.patch('/users/:id',verifyToken, async(req, res) =>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const updateDoc = {
+        $set: {
+          role: 'pro-user'
         }
       }
       const result = await usersCollection.updateOne(filter, updateDoc);
@@ -165,6 +178,13 @@ async function run() {
      res.send(result);
    })
 
+
+   app.get('/survey/:id', async (req, res) =>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const result = await surveyCollection.findOne(query);
+    res.send(result);
+   })
 
    // Generate client secret for stripe payment
    app.post('/create-payment-intent', verifyToken,async (req, res) =>{
