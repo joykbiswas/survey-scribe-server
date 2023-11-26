@@ -7,6 +7,7 @@ const cookieParser = require('cookie-parser')
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const morgan = require('morgan')
+const stripe = require('stripe') (process.env.PAYMENT_SECRET_KEY)
 const port = process.env.PORT || 5000
 
 
@@ -35,6 +36,7 @@ async function run() {
     const usersCollection = client.db('surveyDB').collection('users');
     const reviewCollection = client.db('surveyDB').collection('reviews');
     const surveyCollection = client.db('surveyDB').collection('surveys');
+    const paymentCollection = client.db('surveyDB').collection('payments');
 
     
     //jwt related api
@@ -163,6 +165,26 @@ async function run() {
      res.send(result);
    })
 
+
+   // Generate client secret for stripe payment
+   app.post('/create-payment-intent', verifyToken,async (req, res) =>{
+    const {price} = req.body
+    const amount = parseInt(price * 100)
+    if(!price || amount < 1) return
+    const {client_secret} = await stripe.paymentIntents.create({
+      amount: amount,
+      currency: 'usd',
+      payment_method_types: ['card']
+    })
+    res.send({clientSecret: client_secret})
+  })
+
+  // save price info in price collection
+  app.post('/payments',verifyToken, async(req, res) =>{
+    const price = req.body
+    const result = await paymentCollection.insertOne(price)
+    res.send(result)
+  })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
