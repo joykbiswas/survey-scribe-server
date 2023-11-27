@@ -49,7 +49,7 @@ async function run() {
 
     // middleware
     const verifyToken = (req, res, next) =>{
-      console.log('inside verifyToken',req.headers.authorization);
+      // console.log('inside verifyToken',req.headers.authorization);
       if(!req.headers.authorization){
         return res.status(401).send({message: 'unauthorized access'});
       }
@@ -107,11 +107,11 @@ async function run() {
       res.send({admin})
     })
 
-    app.get('/users/surveyor/:email', async(req, res) =>{     //verifyToken, problem
+    app.get('/users/surveyor/:email',verifyToken, async(req, res) =>{     //verifyToken, problem
       const email = req.params.email;
-      // if(email !== req.decoded.email){
-      //   return res.status(403).send({message: 'unauthorized access'})
-      // }
+      if(email !== req.decoded.email){
+        return res.status(403).send({message: 'unauthorized access'})
+      }
       const query = {email: email};
       const user = await usersCollection.findOne(query);
       let surveyor = false;
@@ -135,9 +135,10 @@ async function run() {
     })
 
     // user role pro-use change by payment
-    app.patch('/users/:id',verifyToken, async(req, res) =>{
-      const id = req.params.id;
-      const filter = {_id: new ObjectId(id)}
+    app.patch('/users/proUser/:email',verifyToken, async(req, res) =>{
+      const email = req.params.email;
+      console.log(email);
+      const filter = {email:(email)}
       const updateDoc = {
         $set: {
           role: 'pro-user'
@@ -169,6 +170,7 @@ async function run() {
     res.send(result)
    })
    
+
    app.get('/survey', async(req, res) =>{
     let query ={}
     if(req.query.email){
@@ -176,6 +178,19 @@ async function run() {
      }
      const result = await surveyCollection.find(query).toArray()
      res.send(result);
+   })
+
+   //update like count
+   app.patch('/survey/like/:id', async(req, res) =>{
+    const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const updateDoc = {
+        $inc: {
+          role: {like: 1}
+        }
+      }
+      const result = await surveyCollection.updateOne(filter, updateDoc);
+      res.send(result);
    })
 
 
@@ -204,6 +219,10 @@ async function run() {
     const price = req.body
     const result = await paymentCollection.insertOne(price)
     res.send(result)
+  })
+  app.get('/payments', async (req, res) =>{
+    const result = await paymentCollection.find().toArray()
+    res.send(result);
   })
 
     // Send a ping to confirm a successful connection
