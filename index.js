@@ -165,12 +165,15 @@ async function run() {
    app.post('/survey',async(req, res) =>{
     const newSurvey = req.body;
     newSurvey.timestamp = new Date(); //creation date
+    newSurvey.like = 0
+    newSurvey.disLike = 0
     console.log(newSurvey);
     const result = await surveyCollection.insertOne(newSurvey)
     res.send(result)
    })
    
 
+   // 
    app.get('/survey', async(req, res) =>{
     let query ={}
     if(req.query.email){
@@ -180,19 +183,31 @@ async function run() {
      res.send(result);
    })
 
-   //update like count
+   //update like count increment
    app.patch('/survey/like/:id', async(req, res) =>{
     const id = req.params.id;
       const filter = {_id: new ObjectId(id)}
       const updateDoc = {
         $inc: {
-          role: {like: 1}
+           like:1
         }
       }
       const result = await surveyCollection.updateOne(filter, updateDoc);
       res.send(result);
    })
 
+   //update dislike count increment
+   app.patch('/survey/dislike/:id', async(req, res) =>{
+    const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const updateDoc = {
+        $inc: {
+          disLike:1
+        }
+      }
+      const result = await surveyCollection.updateOne(filter, updateDoc);
+      res.send(result);
+   })
 
    app.get('/survey/:id', async (req, res) =>{
     const id = req.params.id;
