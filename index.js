@@ -107,7 +107,8 @@ async function run() {
       res.send({admin})
     })
 
-    app.get('/users/surveyor/:email',verifyToken, async(req, res) =>{     //verifyToken, problem
+    // only  surveyor  email get
+    app.get('/users/surveyor/:email',verifyToken, async(req, res) =>{     
       const email = req.params.email;
       if(email !== req.decoded.email){
         return res.status(403).send({message: 'unauthorized access'})
@@ -119,6 +120,21 @@ async function run() {
         surveyor = user.role === 'surveyor';
       }
       res.send({surveyor});
+    })
+
+    // only  surveyor  email get
+    app.get('/users/proUser/:email',verifyToken, async(req, res) =>{     
+      const email = req.params.email;
+      if(email !== req.decoded.email){
+        return res.status(403).send({message: 'unauthorized access'})
+      }
+      const query = {email: email};
+      const user = await usersCollection.findOne(query);
+      let proUser = false;
+      if(user){
+        proUser = user.role === 'pro-user';
+      }
+      res.send({proUser});
     })
 
    // user role change by admin
@@ -173,16 +189,17 @@ async function run() {
    })
    
 
-   // 
+   // read data
    app.get('/survey', async(req, res) =>{
     let query ={}
     if(req.query.email){
       query = {email: req.query.email}
      }
-     const result = await surveyCollection.find(query).toArray()
+     const result = await surveyCollection.find(query).sort({timestamp:-1}).toArray()
      res.send(result);
    })
 
+   
    //update like count increment
    app.patch('/survey/like/:id', async(req, res) =>{
     const id = req.params.id;
