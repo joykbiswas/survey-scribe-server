@@ -36,6 +36,7 @@ async function run() {
     const usersCollection = client.db('surveyDB').collection('users');
     const reviewCollection = client.db('surveyDB').collection('reviews');
     const surveyCollection = client.db('surveyDB').collection('surveys');
+    const commentCollection = client.db('surveyDB').collection('comments');
     const paymentCollection = client.db('surveyDB').collection('payments');
 
     
@@ -232,6 +233,22 @@ async function run() {
     const result = await surveyCollection.findOne(query);
     res.send(result);
    })
+
+   // pro user comment
+   app.post('/comments',async(req,res) =>{
+    const apply =req.body;
+    const result = await commentCollection.insertOne(apply);
+    res.send(result)
+  })
+
+  app.get('/comments', async(req,res) =>{
+    let query = {}
+    if(req.query.email){
+      query = {email: req.query.email}
+    }
+    const result = await commentCollection.find(query).toArray()
+    res.send(result)
+})
 
    // Generate client secret for stripe payment
    app.post('/create-payment-intent', verifyToken,async (req, res) =>{
