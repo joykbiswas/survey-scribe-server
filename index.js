@@ -250,6 +250,13 @@ async function run() {
     res.send(result)
 })
 
+  app.get('/comments/:survey_id', async(req,res) =>{
+    const{ survey_id} =req.params
+    
+    const result = await commentCollection.find({survey_id}).toArray()
+    res.send(result)
+})
+
    // Generate client secret for stripe payment
    app.post('/create-payment-intent', verifyToken,async (req, res) =>{
     const {price} = req.body
@@ -297,4 +304,6 @@ app.listen(port,() =>{
 /*
 <option value={id}>Name<option>
 { titile : ''sada", like:0, dislike : 0,}
+
+{ title : { $regex: queryString } }
 */
